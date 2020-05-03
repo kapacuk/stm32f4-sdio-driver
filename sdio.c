@@ -67,13 +67,6 @@ sdio_isr() {
     portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
 }
 
-void
-dma2_stream3_isr(void)
-{
-    if (dma_get_interrupt_flag(DMA2, DMA_STREAM3, DMA_TCIF))
-        dma_clear_interrupt_flags(DMA2, DMA_STREAM3, DMA_TCIF);
-}
-
 /*
  * The Embest board ties PB15 to 'card detect' which is useful
  * for aborting early, and detecting card swap. Needs porting
@@ -161,9 +154,7 @@ sdio_bus(int bits, enum SDIO_CLOCK_DIV freq) {
 static void dma_init(void)
 {
     /* SDIO uses DMA controller 2 Stream 3 or 6 Channel 4. */
-    /* Enable DMA1 clock and IRQ */
     rcc_periph_clock_enable(RCC_DMA2);
-    nvic_enable_irq(NVIC_DMA2_STREAM3_IRQ);
     dma_stream_reset(DMA2, DMA_STREAM3);
     dma_set_priority(DMA2, DMA_STREAM3, DMA_SxCR_PL_LOW);
     dma_set_memory_size(DMA2, DMA_STREAM3, DMA_SxCR_MSIZE_32BIT);
@@ -174,11 +165,7 @@ static void dma_init(void)
     dma_set_memory_burst(DMA2, DMA_STREAM3, DMA_SxCR_MBURST_INCR4);
     dma_enable_fifo_mode(DMA2, DMA_STREAM3);
     dma_set_fifo_threshold(DMA2, DMA_STREAM3, DMA_SxFCR_FTH_4_4_FULL);
-
-    // dma_enable_circular_mode(DMA2, DMA_STREAM3);  ?
     dma_set_peripheral_address(DMA2, DMA_STREAM3, (uint32_t) &SDIO_FIFO);
-
-    dma_enable_transfer_complete_interrupt(DMA2, DMA_STREAM3);
     dma_channel_select(DMA2, DMA_STREAM3, DMA_SxCR_CHSEL_4);
 }
 
@@ -233,7 +220,6 @@ sdio_init(void)
 #endif
 
     nvic_set_priority(NVIC_SDIO_IRQ, 11<<4);
-    nvic_set_priority(NVIC_DMA2_STREAM3_IRQ, 11<<4);
     nvic_enable_irq(NVIC_SDIO_IRQ);
 
     txCount = rxCount = 0;
@@ -971,6 +957,7 @@ sdio_readblock_dma(SDIO_CARD c, uint32_t lba, uint8_t *buf, uint8_t wait) {
     if( (err = sdio_command(16, 512)) )
         return err;
 
+    dma_clear_interrupt_flags(DMA2, DMA_STREAM3, DMA_TCIF | DMA_HTIF | DMA_TEIF | DMA_DMEIF | DMA_FEIF);
     dma_set_memory_address(DMA2, DMA_STREAM3, (uint32_t) buf);
     dma_set_transfer_mode(DMA2, DMA_STREAM3, DMA_SxCR_DIR_PERIPHERAL_TO_MEM);
     dma_enable_stream(DMA2, DMA_STREAM3);
@@ -1008,6 +995,7 @@ sdio_writeblock_dma(SDIO_CARD c, uint32_t lba, uint8_t *buf, uint8_t wait) {
     if( (err = sdio_command(16, 512)) )
         return err;
 
+    dma_clear_interrupt_flags(DMA2, DMA_STREAM3, DMA_TCIF | DMA_HTIF | DMA_TEIF | DMA_DMEIF | DMA_FEIF);
     dma_set_memory_address(DMA2, DMA_STREAM3, (uint32_t) buf);
     dma_set_transfer_mode(DMA2, DMA_STREAM3, DMA_SxCR_DIR_MEM_TO_PERIPHERAL);
     dma_enable_stream(DMA2, DMA_STREAM3);
