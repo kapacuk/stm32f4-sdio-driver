@@ -19,10 +19,24 @@
 
 OBJS = util.o dump.o sdio.o sdio_util.o debug.o uart.o clock.o term.o rtos/heap_4.o rtos/list.o rtos/port.o rtos/tasks.o
 BINARY = monitor
+V = 1
 
-LDSCRIPT = ../stm32f4-discovery.ld
 TGT_CFLAGS	+= -I./rtos -I.
 TGT_CXXFLAGS	+= -I./rtos -I.
 
+LDSCRIPT = ./stm32f407vet6.ld
+
 include ../../Makefile.include
 
+GDB_CONNECT = -ex 'target extended-remote /dev/ttyBmpGdb' -ex 'monitor swdp_scan' -ex 'atta 1'
+GDB_SVD = -ex 'source ~/STM32/gdb.py' -ex 'svd_load ~/STM32/STM32F401x.svd'
+
+fl: $(BINARY).elf
+	$(GDB) --batch $(GDB_CONNECT) -ex load  $^
+
+dbg: $(BINARY).elf
+	$(GDB)-py $(GDB_CONNECT) $(GDB_SVD) $^
+
+
+fldbg: $(BINARY).elf
+	$(GDB)-py $(GDB_CONNECT) $(GDB_SVD) -ex load $^

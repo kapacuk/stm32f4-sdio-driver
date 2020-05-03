@@ -1,0 +1,14 @@
+*~
+build/
+.dep/
+.hg/
+junk/
+archive/
+core
+.gdb*
+*.elf
+*.map
+*.bin
+*.orig
+*.o
+*.d

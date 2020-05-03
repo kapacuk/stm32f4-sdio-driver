@@ -55,7 +55,9 @@ clock_init(void)
 {
        rcc_clock_setup_pll(&rcc_hse_8mhz_3v3[RCC_CLOCK_3V3_168MHZ]);
 #ifdef SYSTICK_HEARTBEAT
-        rcc_periph_clock_enable(RCC_GPIOD);
-	gpio_mode_setup(GPIOD, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO15);
+        rcc_periph_clock_enable(RCC_GPIOA);
+        gpio_set(GPIOA,GPIO6 | GPIO7);
+	gpio_mode_setup(GPIOA, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO6);
+	gpio_mode_setup(GPIOA, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO7);
 #endif
 }
