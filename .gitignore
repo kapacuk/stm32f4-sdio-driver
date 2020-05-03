@@ -1,14 +1,6 @@
 *~
-build/
-.dep/
-.hg/
-junk/
-archive/
+*.[do]
 core
-.gdb*
+.gdb_history
 *.elf
 *.map
-*.bin
-*.orig
-*.o
-*.d
