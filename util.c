@@ -29,7 +29,6 @@ void
 bb_setup(int32_t baud) {
     clock_init();
     console = uart_init(PA9, PA10, baud);
-    sdio_init();
 }
 
 

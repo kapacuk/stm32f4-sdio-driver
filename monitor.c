@@ -59,6 +59,7 @@ taskMain(void *x)
     (void)x;
     char c;
     uint8_t *addr;
+    sdio_init();
 
     text_color(console, DEFAULT);
     clear_screen(console);
